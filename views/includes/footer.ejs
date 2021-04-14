@@ -1,0 +1,114 @@
+<footer>
+    <div class="container">
+        <div class="row">
+            Your website &copy; <%= new Date().getFullYear() %>
+        </div>
+    </div>
+</footer>
+</div>
+
+<script src="/public/js/jquery-3.3.1.min.js"></script>
+<script src="/public/js/script.js"></script>
+<script src="/public/js/main.min.js"></script>
+<script src="/public/js/socket.io.js"></script>
+
+<script>
+
+    window.user = null;
+
+    var socketIO=io("http://localhost:3000")
+
+    function getUser() {
+
+        if (localStorage.getItem("accessToken")) {
+
+            var ajax = new XMLHttpRequest();
+            ajax.open("POST", "/getUser", true);
+
+            ajax.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+
+                    var response = JSON.parse(this.responseText);
+
+                    if (response.status == "success") {
+                        window.user = response.data;
+
+                        if (typeof isUpdateProfile !== "undefined" && isUpdateProfile) {
+                            showProfileData();
+                        }
+                        if(typeof isHomePage !== 'undefined' && isHomePage){
+                            showAddPost();
+                            getNewsfeed();
+                        }
+
+                    } 
+                    else {
+                        localStorage.removeItem("accessToken");
+                    }
+                    showMainMenu();
+                }
+            };
+
+            var formData = new FormData();
+            formData.append("accessToken", localStorage.getItem("accessToken"));
+            ajax.send(formData);
+        } else {
+            showMainMenu();
+        }
+    }
+
+    function showMainMenu() {
+        var html = " ";
+
+        if (localStorage.getItem("accessToken")) {
+            html += '<li>';
+                html += '<a href="/pages">Pages</a> ';
+            html += '</li>';
+
+            html += '<li>';
+                html += '<a href="/groups">Groups</a> ';
+            html += '</li>';
+
+            html += '<li>';
+                html += '<a href="/updateProfile">Profile</a>';
+            html += '</li>';
+
+            html += '<li>';
+                html += '<a href="/logout" onclick="return doLogout();">Logout</a>';
+            html += '</li>';
+        } else {
+            html += '<li>';
+                html += '<a href="/login">Login</a>';
+            html += '</li>';
+
+            html += '<li>';
+                html += '<a href="/signup">Signup</a>';
+            html += '</li>';
+        }
+
+        document.getElementById("main-menu").innerHTML = html;
+    }
+
+    function doLogout() {
+        localStorage.removeItem("accessToken");
+        return true;
+    }
+
+    window.onload = function () {
+        getUser();
+    };
+
+    window.onerror = function (file, line, error) {
+        alert(file + " " + line + " " + error);
+    };
+</script>
+
+<style>
+.fa.fa-star {
+    color: yellowgreen !important;
+}
+</style>
+
+</body>
+
+</html>
